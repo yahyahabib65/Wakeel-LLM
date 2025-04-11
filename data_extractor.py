@@ -4,8 +4,9 @@ from PIL import Image
 import io
 import os
 
+
 # Optional: specify tesseract path if not in PATH
-# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Users\24280001\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
 
 def extract_text_from_pdf_images(pdf_path, lang='eng'):
     # Open the PDF
