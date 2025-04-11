@@ -37,11 +37,11 @@ def extract_text_from_pdf_images(pdf_path, lang='eng'):
     return "\n".join(extracted_text)
 
 # Example usage
-pdf_file = 'raw_data/family_law_manual.pdf'
+pdf_file = 'raw_data/image_pdf/family_law_manual.pdf'
 output_text = extract_text_from_pdf_images(pdf_file)
 
 # Save to text file
-with open("extracted_text.txt", "w", encoding="utf-8") as f:
+with open("processed_data/family_law_manual.txt", "w", encoding="utf-8") as f:
     f.write(output_text)
 
 print("Text extraction complete. Output saved to 'extracted_text.txt'.")
