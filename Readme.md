@@ -3,6 +3,11 @@
 ## Summary
 Provide a brief overview of the project, its purpose, and key objectives.
 
+## Data Sources
+
+https://www.pakistanlawsite.com/Login/Check
+https://www.peshawarhighcourt.gov.pk/PHCCMS/reportedJudgments.php?action=search
+
 ## Features
 - Feature 1: Brief description of the first feature.
 - Feature 2: Brief description of the second feature.
