@@ -9,14 +9,7 @@ https://www.pakistanlawsite.com/Login/Check
 https://www.peshawarhighcourt.gov.pk/PHCCMS/reportedJudgments.php?action=search
 
 ## Features
-- Feature 1: Brief description of the first feature.
-- Feature 2: Brief description of the second feature.
-- Feature 3: Brief description of the third feature.
-- Feature 4: Brief description of the fourth feature.
-- Feature 5: Brief description of the fifth feature.
-
-
-- 4/13/2025
+4/13/2025
  1. TAB 1: LEGAL CONSULTING: This tab is for both general users and lawyers. 
  Input: Text, Attach input as pdf. 
  Method: Fine-tuned Model
