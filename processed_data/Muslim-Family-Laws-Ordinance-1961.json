@@ -1,0 +1,52 @@
+[
+  {
+    "instruction": "What is the purpose of the Muslim Family Laws Ordinance, 1961?",
+    "input": "",
+    "output": "The purpose of the Muslim Family Laws Ordinance, 1961 is to give effect to certain recommendations of the Commission on Marriage and Family Laws, specifically addressing issues related to marriage, divorce, maintenance, and inheritance among Muslim citizens of Pakistan."
+  },
+  {
+    "instruction": "Who does the Muslim Family Laws Ordinance apply to?",
+    "input": "",
+    "output": "The Ordinance applies to all Muslim citizens of Pakistan, regardless of where they reside."
+  },
+  {
+    "instruction": "What is the role of the Arbitration Council under the Ordinance?",
+    "input": "",
+    "output": "The Arbitration Council is responsible for resolving disputes related to family laws, such as polygamy, divorce (talaq), and maintenance. It consists of a Chairman and one representative nominated by each party involved in a dispute."
+  },
+  {
+    "instruction": "Is registration of Muslim marriages mandatory under this Ordinance?",
+    "input": "",
+    "output": "Yes, every marriage solemnized under Muslim Law must be registered according to the provisions of this Ordinance. Failure to register can result in penalties."
+  },
+  {
+    "instruction": "What are the consequences of contracting a second marriage without permission?",
+    "input": "",
+    "output": "A man who contracts another marriage without the permission of the Arbitration Council is required to pay the full amount of dower to his existing wife or wives and may also be punished with up to one year of simple imprisonment or a fine of up to five thousand rupees, or both."
+  },
+  {
+    "instruction": "What is the legal process for talaq (divorce) under this Ordinance?",
+    "input": "",
+    "output": "A man must give written notice of talaq to the Chairman and supply a copy to his wife. The divorce is not effective until 90 days after the notice is delivered, unless revoked earlier. During this period, an Arbitration Council is constituted to attempt reconciliation."
+  },
+  {
+    "instruction": "Can a wife exercise the right to divorce?",
+    "input": "",
+    "output": "Yes, if the right to divorce has been delegated to the wife, or if the marriage is being dissolved otherwise than by talaq, the provisions of Section 7 apply accordingly."
+  },
+  {
+    "instruction": "What recourse does a wife have if the husband fails to provide maintenance?",
+    "input": "",
+    "output": "A wife can apply to the Chairman, who will constitute an Arbitration Council to determine the amount of maintenance. If the amount is not paid, it is recoverable as arrears of land revenue."
+  },
+  {
+    "instruction": "When is dower presumed to be payable on demand?",
+    "input": "",
+    "output": "If the nikahnama or marriage contract does not specify how dower is to be paid, the entire amount is presumed to be payable on demand."
+  },
+  {
+    "instruction": "What powers does the Government have under this Ordinance?",
+    "input": "",
+    "output": "The Government has the power to make rules to carry out the purposes of the Ordinance. Breach of these rules can be punishable with up to one month of imprisonment or a fine of up to two hundred rupees, or both."
+  }
+]
