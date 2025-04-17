@@ -14,10 +14,10 @@ https://www.peshawarhighcourt.gov.pk/PHCCMS/reportedJudgments.php?action=search
  Input: Text, Attach input as pdf. 
  Method: Fine-tuned Model
  Output: Summary/Explanation of the input document in concise/easy manner.
- 2. TAB 2: DRAFTING:This tab is for lawyers, allowing them to draft e.g. inhertance Will Deed.
- Input: Text, Attach input as pdf. 
- Method: Prompting (Possibly RAG)
- Output: Draft for particular case. (Pilot draft: Will Deed)
+ 2. TAB 2: DRAFTING:This tab is for lawyers, allowing them to draft petitions e.g. Khulaa Petition.
+ Input: Text
+ Method: Agentic AI, Prompting
+ Output: Draft in text file for a particular case. (Pilot draft: Khula Petition)
  3. TAB 3: CITATIONS: Given the input, give the relevant cases.
  Input: Text
  Method: RAG
