@@ -105,13 +105,105 @@ with tab1:
         st.rerun()
 
 # Tab 2: Draft Generator
-with tab2:
-    st.title("📄 Draft a Legal Document")
-    draft_input = st.text_area("Describe the document you want to generate", height=150)
-    generate = st.button("Generate Draft")
+# with tab2:
+#     st.title("📄 Draft a Legal Document")
+#     draft_input = st.text_area("Describe the document you want to generate", height=150)
+#     generate = st.button("Generate Draft")
 
-    if generate and draft_input:
-        # Mock Draft Output
-        draft_output = f"**Draft for:** {draft_input}\n\nThis is your AI-generated legal document."
-        st.markdown(draft_output)
-        st.download_button("📥 Download Draft", draft_output, file_name="legal_draft.txt")
+#     if generate and draft_input:
+#         # Mock Draft Output
+#         draft_output = f"**Draft for:** {draft_input}\n\nThis is your AI-generated legal document."
+#         st.markdown(draft_output)
+#         st.download_button("📥 Download Draft", draft_output, file_name="legal_draft.txt")
+
+with tab2:
+    st.title("📑 Legal Draft Generation")
+    
+    # Create a container for chat history
+    draft_chat_placeholder = st.container()
+    
+    with draft_chat_placeholder:
+        for chat in st.session_state["chat_history"]:
+            if chat["role"] == "user":
+                st.markdown(f"**🧑‍💼 You:** {chat['content']}")
+            else:
+                st.markdown(f"**🤖 Wakeel:** {chat['content']}")
+                st.write(f"_{chat['time']}_")
+                st.button("👍", key=f"like_{chat['time']}")
+                st.button("👎", key=f"dislike_{chat['time']}")
+                st.download_button(
+                    "📥 Download PDF",
+                    chat["content"],
+                    file_name="legal_draft.pdf",
+                    key=f"download_{chat['time']}"
+                )
+
+    st.write("---")
+
+    st.subheader("Generate Your Legal Draft")
+    col1, col2, col3 = st.columns([1, 6, 1])
+    with col1:
+        uploaded_file = st.file_uploader("📎", label_visibility="collapsed", key="file_uploader_draft")
+    with col2:
+        user_input = st.text_area("Describe your draft requirements", label_visibility="collapsed", height=70)
+    with col3:
+        voice_input = st.button("🎤",key="voice_input_consulting")
+    generate_button = st.button("Generate Draft", key="generate_draft")
+
+    if generate_button and user_input:
+        # Save the user's query to chat history
+        st.session_state.chat_history.append({
+            "role": "user",
+            "content": user_input,
+            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
+
+        # Directly use the model to generate the draft
+        combined_input = (
+            "Please generate a legal draft based on the following input:\n\n"
+            + user_input
+        )
+
+        # Pass the input to the LLM for generation
+        inputs = tokenizer(combined_input, return_tensors="pt").to(model.device)
+        outputs = model.generate(**inputs, max_new_tokens=300, do_sample=True, top_p=0.9, temperature=0.7)
+        ai_response = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
+
+        # Save the AI response to chat history as a draft
+        st.session_state.chat_history.append({
+            "role": "ai",
+            "content": ai_response,
+            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
+
+        # Display the generated draft
+        st.markdown("### Generated Legal Draft:")
+        st.write(ai_response)
+        
+        # Optionally allow users to download the generated draft as a PDF
+        st.download_button(
+            "📥 Download Draft",
+            ai_response,
+            file_name="legal_draft.pdf",
+            key="download_draft"
+        )
+        
+        st.rerun()
+
+#         def add_background_image(image_path):
+#     st.markdown(
+#         f"""
+#         <style>
+#         .stApp {{
+#             background-image: url("{image_path}");
+#             background-size: cover;
+#             background-position: center;
+#             background-repeat: no-repeat;
+#         }}
+#         </style>
+#         """,
+#         unsafe_allow_html=True
+#     )
+
+# # Call the function with the relative path to your image
+# add_background_image("background.png")  # Replace with your image file path
