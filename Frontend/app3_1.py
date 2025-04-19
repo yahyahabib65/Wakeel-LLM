@@ -80,7 +80,7 @@ with tab1:
     with col2:
         user_input = st.text_area("Type your query", label_visibility="collapsed", height=70)
     with col3:
-        voice_input = st.button("🎤")
+        voice_input = st.button("🎤", key="voice_input_draft")
     send = st.button("Send", key="send_consulting")
 
     if send and user_input:
@@ -142,7 +142,7 @@ with tab2:
     with col2:
         user_input = st.text_area("Describe your draft requirements", label_visibility="collapsed", height=70)
     with col3:
-        voice_input = st.button("🎤")
+        voice_input = st.button("🎤",key="voice_input_consulting")
     generate_button = st.button("Generate Draft", key="generate_draft")
 
     if generate_button and user_input:
