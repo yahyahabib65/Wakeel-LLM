@@ -87,7 +87,7 @@ def load_rag_model():
 vector_store, embeddings = load_rag_model()
 
 # Tabs for Consulting and Legal Drafts
-tab1, tab2 = st.tabs(["💼 Legal Consulting", "📄 Draft Generator"])
+tab1, tab2, tab3 = st.tabs(["💼 Legal Consulting", "📄 Draft Generator","Citations"])
 
 # Tab 1: Legal Consulting
 with tab1:
@@ -248,3 +248,6 @@ with tab2:
         )
         
         st.rerun()
+
+with tab3:
+    pass
