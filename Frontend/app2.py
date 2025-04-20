@@ -43,7 +43,7 @@ def set_bg_from_local(image_file):
     st.markdown(css, unsafe_allow_html=True)
 
 # Usage
-set_bg_from_local("D:\\LUMS\\Wakeel-LLM\\Frontend\\logo.png")
+set_bg_from_local("D:\\LUMS\\Wakeel-LLM\\Frontend\\demobackground.jpeg")
 # Sidebar
 with st.sidebar:
     st.title("⚖️ Wakeel")
