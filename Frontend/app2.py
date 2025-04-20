@@ -3,10 +3,47 @@ from datetime import datetime
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 import torch
+import base64
 
 # Page config
 st.set_page_config(page_title="Wakeel - Legal Assistant", layout="wide")
 
+# # Function to add a background image
+# def add_background_image(image_path):
+#     st.markdown(
+#         f"""
+#         <style>
+#         .stApp {{
+#             background-image: url("{image_path}");
+#             background-size: cover;
+#             background-position: center;
+#             background-repeat: no-repeat;
+#         }}
+#         </style>
+#         """,
+#         unsafe_allow_html=True
+#     )
+
+# # Call the function with the relative path to your image
+# add_background_image("D:\\LUMS\\Wakeel-LLM\\Frontend\\background.png") 
+def set_bg_from_local(image_file):
+    with open(image_file, "rb") as image:
+        encoded = base64.b64encode(image.read()).decode()
+
+    css = f"""
+    <style>
+    .stApp {{
+        background-image: url("data:image/png;base64,{encoded}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }}
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
+
+# Usage
+set_bg_from_local("D:\\LUMS\\Wakeel-LLM\\Frontend\\logo.png")
 # Sidebar
 with st.sidebar:
     st.title("⚖️ Wakeel")
