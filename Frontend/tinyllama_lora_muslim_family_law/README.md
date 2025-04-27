@@ -1,5 +1,5 @@
 ---
-base_model: TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T
+base_model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
 library_name: peft
 ---
 

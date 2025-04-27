@@ -6,6 +6,7 @@ import torch
 import base64
 import os
 
+
 # Page config
 st.set_page_config(page_title="Wakeel - Legal Assistant", layout="wide")
 def set_bg_from_local(image_file):
@@ -65,6 +66,21 @@ def load_model():
 
 model, tokenizer = load_model()
 
+# def load_model():
+#     # Load tokenizer and base model from local
+#     tokenizer = AutoTokenizer.from_pretrained("tinyllama_lora_muslim_family_law")
+    
+#     base_model = AutoModelForCausalLM.from_pretrained(
+#         "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+#         torch_dtype=torch.float16,
+#         device_map="auto"
+#     )
+
+#     # Load LoRA weights from the same local folder
+#     model = PeftModel.from_pretrained(base_model, "tinyllama_lora_muslim_family_law")
+
+#     return model.eval(), tokenizer
+
 # Tabs for Consulting and Legal Drafts
 tab1, tab2 = st.tabs(["💼 Legal Consultant", "📄 Legal Draftsman"])
 
@@ -91,7 +107,7 @@ with tab1:
 
     st.write("---")
 
-    st.subheader("Ask Your Question | پ کیا پوچھنا چاہتے ہیں؟")
+    st.subheader("Ask Your Question | آپ کیا پوچھنا چاہتے ہیں؟")
     col1, col2, col3 = st.columns([1, 6, 1])
     # with col1:
         # uploaded_file = st.file_uploader("📎", label_visibility="collapsed")
