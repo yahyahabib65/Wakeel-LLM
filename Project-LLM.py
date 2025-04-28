@@ -69,7 +69,7 @@ def load_rag_model():
 #endregion
 # Helper function to generate model response
 def generate_response(prompt_text):
-    inputs = tokenizer(prompt_text, return_tensors="pt").to("cuda")
+    inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
     outputs = model.generate(**inputs, max_new_tokens=200)
     reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
     return reply
