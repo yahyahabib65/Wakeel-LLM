@@ -1,85 +1,171 @@
 import streamlit as st
-from datetime import datetime
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from peft import PeftModel
 
-# Page config
-st.set_page_config(page_title="Wakeel - Legal Assistant", layout="wide")
+#region models and helper functions with initialization
+@st.cache_resource
+def load_model():
+    base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
+    base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
+    tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
 
-# Sidebar
+    model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
+    model.eval()
+    return model, tokenizer
+
+model, tokenizer = load_model()
+
+# Helper function to generate model response
+def generate_response(prompt_text):
+    inputs = tokenizer(prompt_text, return_tensors="pt").to("cuda")
+    outputs = model.generate(**inputs, max_new_tokens=200)
+    reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return reply
+
+#endregion
+
+#region streamlit uilibraries
+# ─────────────────────────────────────────────────────────────────────────────
+# 1) Include Font Awesome (for avatar/icon) – optional
+st.markdown(
+    '<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">',
+    unsafe_allow_html=True,
+)
+#endregion
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2) Session-state initialization
+if "chat_sessions" not in st.session_state:
+    st.session_state.chat_sessions = {1: []}     # chat_id → list of (role, text)
+if "active_chat" not in st.session_state:
+    st.session_state.active_chat = 1
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3) Sidebar: select or create chats
 with st.sidebar:
-    st.title("⚖️ Wakeel")
+    st.title("WakeelGPT")
+    st.header("💬 Chats")
+
+    # List existing chats
+    chat_ids = list(st.session_state.chat_sessions.keys())
+    choice = st.radio(
+        "Select chat",
+        chat_ids,
+        index=chat_ids.index(st.session_state.active_chat),
+    )
+    st.session_state.active_chat = choice
+
+    st.markdown("---")
     if st.button("➕ New Chat"):
-        st.session_state["chat_history"] = []
-    st.text_input("🔍 Search chats")
-    st.write("---")
-    st.subheader("Manage Chats")
-    st.button("📁 View All")
-    st.button("🗑️ Clear All")
-    st.write("---")
-    st.subheader("User Profile & Settings")
-    st.selectbox("Preferred Language", ["English", "Urdu", "Both"])
-    st.button("⚙️ Settings")
-    st.write("Logged in as: **Your Name**")
+        new_id = max(chat_ids) + 1
+        st.session_state.chat_sessions[new_id] = []
+        st.session_state.active_chat = new_id
+        st.rerun()
 
-# Initialize chat history
-if "chat_history" not in st.session_state:
-    st.session_state["chat_history"] = []
+# ─────────────────────────────────────────────────────────────────────────────
 
-# Tabs for Consulting and Legal Drafts
-tab1, tab2 = st.tabs(["💼 Legal Consulting", "📄 Draft Generator"])
-
-# Tab 1: Legal Consulting
+tab1, tab2, tab3 = st.tabs(["💼 Legal Consulting", "📄 Draft Generator","Citations"])
 with tab1:
-    st.title("💬 Wakeel - Your AI Legal Consultant")
-    chat_placeholder = st.container()
+    # # Container for messages
+    
+    # chat_container = st.container()
 
-    with chat_placeholder:
-        for chat in st.session_state["chat_history"]:
-            if chat["role"] == "user":
-                st.markdown(f"**🧑‍💼 You:** {chat['content']}")
-            else:
-                st.markdown(f"**🤖 Wakeel:** {chat['content']}")
-                st.write(f"_{chat['time']}_")
-                st.button("👍", key=f"like_{chat['time']}")
-                st.button("👎", key=f"dislike_{chat['time']}")
-                st.download_button("📥 Download PDF", chat["content"], file_name="legal_draft.pdf")
+    # # # Display history
+    # # for role, text in st.session_state.chat_sessions[st.session_state.active_chat]:
+    # #     with chat_container.chat_message(role):
+    # #         chat_container.write(text)
 
-    st.write("---")
 
-    st.subheader("Ask Your Question")
-    col1, col2, col3 = st.columns([1, 6, 1])
-    with col1:
-        uploaded_file = st.file_uploader("📎", label_visibility="collapsed")
-    with col2:
-        user_input = st.text_area("Type your query", label_visibility="collapsed", height=70)
-    with col3:
-        voice_input = st.button("🎤")
-    send = st.button("Send", key="send_consulting")
 
-    if send and user_input:
-        st.session_state.chat_history.append({
-            "role": "user",
-            "content": user_input,
-            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        })
 
-        # Mock AI Response
-        ai_response = f"Here’s your legal consulting answer for: *{user_input}*"
-        st.session_state.chat_history.append({
-            "role": "ai",
-            "content": ai_response,
-            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        })
 
-        st.experimental_rerun()
+    # # # with st.sidebar:
+    # # messages = st.container()
+    # # if prompt := st.chat_input(placeholder="Your message",accept_file=True,key="consulting"):
+    # #     messages.chat_message("user").write(prompt.text)
+    # #     messages.chat_message("assistant",avatar=":material/gavel:").write(f"Echo: {prompt.text}")
+    # for role, text in st.session_state.chat_sessions[st.session_state.active_chat]:
+    #     with chat_container.chat_message(role):
+    #         chat_container.write(text)
 
-# Tab 2: Draft Generator
+    #     # Chat input
+    #     prompt = st.chat_input(placeholder="Your message", key=f"chat_input_{key_suffix}")
+    #     if prompt:
+    #         # Save user message
+    #         st.session_state.chat_sessions[st.session_state.active_chat].append(("user", prompt))
+
+    #         with chat_container.chat_message("user"):
+    #             st.write(prompt)
+
+    #         # Generate response
+    #         reply = generate_response(prompt)
+
+    #         # Save assistant message
+    #         st.session_state.chat_sessions[st.session_state.active_chat].append(("assistant", reply))
+
+    #         with chat_container.chat_message("assistant", avatar=":material/gavel:"):
+    #             st.write(reply)
+
+    chat_container = st.container()
+
+    # Display history
+    for role, text in st.session_state.chat_sessions[st.session_state.active_chat]:
+        with chat_container:
+            st.chat_message(role).write(text)
+
+    # Chat input outside the container for visibility
+    prompt = st.chat_input(placeholder="Your message", key=f"chat_input_{st.session_state.active_chat}")
+    if prompt:
+        # Save user message
+        st.session_state.chat_sessions[st.session_state.active_chat].append(("user", prompt))
+
+        with chat_container:
+            st.chat_message("user").write(prompt)
+
+        # Generate response
+        reply = generate_response(prompt)
+
+        # Save assistant message
+        st.session_state.chat_sessions[st.session_state.active_chat].append(("assistant", reply))
+
+        with chat_container:
+            st.chat_message("assistant", avatar=":material/gavel:").write(reply)
+
 with tab2:
-    st.title("📄 Draft a Legal Document")
-    draft_input = st.text_area("Describe the document you want to generate", height=150)
-    generate = st.button("Generate Draft")
+    # Container for messages
+    chat_container = st.container()
 
-    if generate and draft_input:
-        # Mock Draft Output
-        draft_output = f"**Draft for:** {draft_input}\n\nThis is your AI-generated legal document."
-        st.markdown(draft_output)
-        st.download_button("📥 Download Draft", draft_output, file_name="legal_draft.txt")
+    # Display history
+    for role, text in st.session_state.chat_sessions[st.session_state.active_chat]:
+        with chat_container.chat_message(role):
+            chat_container.write(text)
+
+
+
+
+
+    # with st.sidebar:
+    messages = st.container()
+    if prompt := st.chat_input(placeholder="Your message",accept_file=True,key="draft"):
+        messages.chat_message("user").write(prompt.text)
+        messages.chat_message("assistant",avatar=":material/gavel:").write(f"Echo: {prompt.text}")
+
+with tab3:
+    # Container for messages
+    chat_container = st.container()
+
+    # Display history
+    for role, text in st.session_state.chat_sessions[st.session_state.active_chat]:
+        with chat_container.chat_message(role):
+            chat_container.write(text)
+
+
+
+
+
+    # with st.sidebar:
+    messages = st.container()
+    if prompt := st.chat_input(placeholder="Your message",accept_file=True,key="citations"):
+        messages.chat_message("user").write(prompt.text)
+        messages.chat_message("assistant",avatar=":material/gavel:").write(f"Echo: {prompt.text}")
