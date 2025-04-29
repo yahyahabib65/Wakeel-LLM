@@ -18,17 +18,17 @@ import google.generativeai as genai
 #region models and helper functions with initialization
 #region lora
 
-# @st.cache_resource
-# def load_model():
-#     base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
-#     base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
-#     tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
+@st.cache_resource
+def load_model():
+    base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
+    base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
+    tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
 
-#     model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
-#     model.eval()
-#     return model, tokenizer
+    model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
+    model.eval()
+    return model, tokenizer
 
-# model, tokenizer = load_model()
+model, tokenizer = load_model()
 
 #endregion
 
@@ -118,11 +118,11 @@ def load_rag_model():
 #endregion
 # Helper function to generate model response
 
-# def generate_response(prompt_text):
-#     inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
-#     outputs = model.generate(**inputs, max_new_tokens=200)
-#     reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
-#     return reply
+def generate_response(prompt_text):
+    inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
+    outputs = model.generate(**inputs, max_new_tokens=200)
+    reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return reply
 
 # def generate_rag_response(prompt_text, vector_store, llm):
 #     # Retrieve relevant documents from the vector store
@@ -263,14 +263,14 @@ with tab1:
             st.chat_message("user").write(prompt)
 
         # Generate response
-        # reply = generate_response(prompt)
+        reply = generate_response(prompt)
 
         # Save assistant message
-        # st.session_state.chat_sessions[st.session_state.active_chat].append(("assistant", reply))
+        st.session_state.chat_sessions[st.session_state.active_chat].append(("assistant", reply))
 
         with chat_container:
-            pass
-            # st.chat_message("assistant", avatar=":material/gavel:").write(reply)
+            # pass
+            st.chat_message("assistant", avatar=":material/gavel:").write(reply)
 
 with tab2:
     # # Container for messages
