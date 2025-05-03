@@ -210,110 +210,103 @@ with tab2:
         messages.chat_message("user").write(prompt.text)
         messages.chat_message("assistant",avatar=":material/gavel:").write(f"Echo: {prompt.text}")
 
-# with tab2:
-#     generator = pipeline('text-generation', model='gpt2',framework='pt',from_tf=True)  # Or replace 'gpt2' with your model name
-#     chat_container = st.container()
+with tab2:
+    st.header("📄 Draft Generator")
+    st.write("Answer the questions step-by-step to generate a legal document.")
 
-#     # Display history of the chat
-#     for role, text in st.session_state.chat_sessions[st.session_state.active_chat]:
-#         with chat_container.chat_message(role):
-#             chat_container.write(text)
+    # Initialize session state for draft generation
+    if "draft_conversation" not in st.session_state:
+        st.session_state.draft_conversation = []  # Stores the conversation history
+    if "draft_complete" not in st.session_state:
+        st.session_state.draft_complete = False
 
-#     # Step-by-step question flow for generating documents
-#     if "answers" not in st.session_state:
-#         st.session_state.answers = {}
+    # Display conversation history
+    for role, text in st.session_state.draft_conversation:
+        with st.chat_message(role):
+            st.write(text)
 
-#     def ask_question_and_collect_answer(question):
-#         user_input = st.text_input(question)
-#         if user_input:
-#             return user_input
-#         return None
+    # If the draft is not complete, continue the conversation
+    if not st.session_state.draft_complete:
+        # User input for the current question
+        user_input = st.chat_input(placeholder="Your answer...")
 
-#     # Ask questions dynamically based on the prompt provided
-#     user_prompt = st.text_input("What kind of legal document do you want to generate?")
+        if user_input:
+            # Save user input
+            st.session_state.draft_conversation.append(("user", user_input))
 
-#     if user_prompt:
-#         # Use Hugging Face model to determine the document type and flow based on the prompt
-#         response = generator(user_prompt, max_length=200, num_return_sequences=1)[0]['generated_text']
-#         st.session_state.chat_sessions[st.session_state.active_chat].append(('assistant', response))
-#         st.write(response)  # Display LLM response
+            # Generate the next question or the draft
+            with st.spinner("Processing..."):
+                try:
+                    # Combine the conversation history into a single prompt
+                    conversation_history = "\n".join(
+                        [f"{role.capitalize()}: {text}" for role, text in st.session_state.draft_conversation]
+                    )
+                    prompt = (
+                        f"You are a legal assistant helping to draft a legal document. "
+                        f"Based on the following conversation, ask the next relevant question or generate the draft:\n\n"
+                        f"{conversation_history}\n\n"
+                        f"Assistant:"
+                    )
 
-#         # Use Hugging Face model to ask additional questions (e.g., for a Khula petition)
-#         questions = ["What is the wife's full name?", "What is the husband's full name?", "When did the marriage take place?"]
-        
-#         for question in questions:
-#             if question not in st.session_state.answers:
-#                 answer = ask_question_and_collect_answer(question)
-#                 if answer:
-#                     st.session_state.answers[question] = answer
+                    # Use the LLM to generate the next response
+                    response = generate_response(prompt)
 
-#         # Once all questions are answered, generate the document
-#         if len(st.session_state.answers) == len(questions):
-#             draft = f"""
-#             IN THE FAMILY COURT AT [City Name]
+                    # Check if the response is a draft or a question
+                    if "IN THE FAMILY COURT" in response or "PETITION" in response:
+                        st.session_state.draft_complete = True
+                        st.session_state.draft_conversation.append(("assistant", response))
+                    else:
+                        st.session_state.draft_conversation.append(("assistant", response))
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
-#             In the matter of:
-#             {st.session_state.answers['What is the wifes full name?']} (Petitioner)
-#             Versus
-#             {st.session_state.answers['What is the husbands full name?']} (Respondent)
+    # If the draft is complete, display it and provide download options
+    if st.session_state.draft_complete:
+        draft = st.session_state.draft_conversation[-1][1]  # The last assistant message is the draft
+        st.subheader("Generated Draft")
+        st.code(draft, language="text")
 
-#             PETITION FOR KHULA
+        # Provide download options
+        def generate_pdf(text, filename="Legal_Draft.pdf"):
+            pdf = FPDF()
+            pdf.set_auto_page_break(auto=True, margin=15)
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+            pdf.multi_cell(0, 10, text)
+            pdf.output(filename)
+            return filename
 
-#             Respectfully Sheweth:
+        def generate_docx(text, filename="Legal_Draft.docx"):
+            doc = Document()
+            doc.add_paragraph(text)
+            doc.save(filename)
+            return filename
 
-#             1. That the petitioner, {st.session_state.answers['What is the wifes full name?']}, was married to the respondent, {st.session_state.answers['What is the husbands full name?']}, on {st.session_state.answers['When did the marriage take place?']}.
+        def generate_txt(text, filename="Legal_Draft.txt"):
+            with open(filename, "w") as file:
+                file.write(text)
+            return filename
 
-#             PRAYER:
-#             The petitioner respectfully prays for Khula (divorce) from the respondent.
-            
-#             Petitioner: {st.session_state.answers['What is the wifes full name?']}
-#             Date: {datetime.date.today().strftime('%d %B %Y')}
-#             """
+        # Generate files
+        pdf_filename = generate_pdf(draft)
+        docx_filename = generate_docx(draft)
+        txt_filename = generate_txt(draft)
 
-#             # Display the generated draft
-#             st.subheader("Generated Khula Petition")
-#             st.code(draft, language="text")
+        # Provide download buttons
+        with open(pdf_filename, "rb") as f:
+            st.download_button("⬇️ Download PDF", f, file_name=pdf_filename)
 
-#             # Function to create PDF
-#             def generate_pdf(text, filename="Khula_Petition.pdf"):
-#                 pdf = FPDF()
-#                 pdf.set_auto_page_break(auto=True, margin=15)
-#                 pdf.add_page()
+        with open(docx_filename, "rb") as f:
+            st.download_button("⬇️ Download DOCX", f, file_name=docx_filename)
 
-#                 pdf.set_font("Arial", size=12)
-#                 pdf.multi_cell(0, 10, text)
+        with open(txt_filename, "rb") as f:
+            st.download_button("⬇️ Download TXT", f, file_name=txt_filename)
 
-#                 pdf.output(filename)
-#                 return filename
-
-#             # Function to create DOCX
-#             def generate_docx(text, filename="Khula_Petition.docx"):
-#                 doc = Document()
-#                 doc.add_paragraph(text)
-#                 doc.save(filename)
-#                 return filename
-
-#             # Function to create TXT
-#             def generate_txt(text, filename="Khula_Petition.txt"):
-#                 with open(filename, "w") as file:
-#                     file.write(text)
-#                 return filename
-
-#             # Generate PDF, DOCX, and TXT files and provide download options
-#             pdf_filename = generate_pdf(draft)
-#             docx_filename = generate_docx(draft)
-#             txt_filename = generate_txt(draft)
-
-#             # Provide the download options
-#             with open(pdf_filename, "rb") as f:
-#                 st.download_button("⬇️ Download PDF", f, file_name=pdf_filename)
-
-#             with open(docx_filename, "rb") as f:
-#                 st.download_button("⬇️ Download DOCX", f, file_name=docx_filename)
-
-#             with open(txt_filename, "rb") as f:
-#                 st.download_button("⬇️ Download TXT", f, file_name=txt_filename)
-
+        # Reset option
+        if st.button("Start Over"):
+            st.session_state.draft_conversation = []
+            st.session_state.draft_complete = False
+            st.rerun()
 
 
 
