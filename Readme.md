@@ -34,3 +34,9 @@ Designed for lawyers to automatically retrieve relevant legal precedents based o
 
 https://www.pakistanlawsite.com/Login/Check
 https://www.peshawarhighcourt.gov.pk/PHCCMS/reportedJudgments.php?action=search
+
+## Getting Started
+
+1. Clone the repository.
+2. Install Python and its dependencies used in project
+3. use streamlit to run project-llm.py
