@@ -13,6 +13,8 @@ from langchain_community.vectorstores import Chroma
 import google.generativeai as genai
 from fpdf import FPDF
 import datetime
+import asyncio  # Add at top if not already
+
 from docx import Document
 import base64
 import streamlit.components.v1 as components
@@ -29,7 +31,32 @@ def detect_target_language(user_prompt):
     else:
         return "en"  # Default
 
-def generate_response_with_translation(user_prompt, use_rag=False):
+# def generate_response_with_translation(user_prompt, use_rag=False):
+#     target_lang = detect_target_language(user_prompt)
+#     translator = Translator()
+#     input_lang = detect(user_prompt)
+
+#     # Translate input prompt if needed
+#     prompt_to_use = user_prompt
+#     if input_lang != target_lang:
+#         prompt_to_use = translator.translate(user_prompt, dest=target_lang).text
+
+#     # Call appropriate response generator
+#     if use_rag:
+#         vector_store = load_rag_model()
+#         model_response = generate_rag_response(prompt_to_use, vector_store)
+#     else:
+#         model_response = generate_response(prompt_to_use)
+
+#     # Translate response back to original language if needed
+#     if detect(model_response) != input_lang:
+#         final_response = translator.translate(model_response, dest=input_lang).text
+#     else:
+#         final_response = model_response
+
+#     return final_response
+
+async def generate_response_with_translation(user_prompt, use_rag=False):
     target_lang = detect_target_language(user_prompt)
     translator = Translator()
     input_lang = detect(user_prompt)
@@ -37,7 +64,8 @@ def generate_response_with_translation(user_prompt, use_rag=False):
     # Translate input prompt if needed
     prompt_to_use = user_prompt
     if input_lang != target_lang:
-        prompt_to_use = translator.translate(user_prompt, dest=target_lang).text
+        translated = await translator.translate(user_prompt, dest=target_lang)
+        prompt_to_use = translated.text
 
     # Call appropriate response generator
     if use_rag:
@@ -48,13 +76,12 @@ def generate_response_with_translation(user_prompt, use_rag=False):
 
     # Translate response back to original language if needed
     if detect(model_response) != input_lang:
-        final_response = translator.translate(model_response, dest=input_lang).text
+        translated_response = await translator.translate(model_response, dest=input_lang)
+        final_response = translated_response.text
     else:
         final_response = model_response
 
     return final_response
-
-
 
 
 # #endregion
@@ -210,7 +237,8 @@ with tab1:
 
         # Generate response
         # reply = generate_response(prompt)
-        reply = generate_response_with_translation(prompt, use_rag=False)
+        # reply = generate_response_with_translation(prompt, use_rag=False)
+        reply = asyncio.run(generate_response_with_translation(prompt, use_rag=False))
 
         # reply = "This is a placeholder response. Please implement the actual model response generation."
 
