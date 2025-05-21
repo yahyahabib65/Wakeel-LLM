@@ -30,34 +30,19 @@ def detect_target_language(user_prompt):
         return "en"
     else:
         return "en"  # Default
+def load_model():
+    base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
+    base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
+    tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
 
-# async def generate_response_with_translation(user_prompt, use_rag=False):
-#     target_lang = detect_target_language(user_prompt)
-#     translator = Translator()
-#     input_lang = detect(user_prompt)
-#
-#     # Translate input prompt if needed
-#     prompt_to_use = user_prompt
-#     if input_lang != target_lang:
-#         translated = await translator.translate(user_prompt, dest=target_lang)
-#         prompt_to_use = translated.text
-#
-#     # Call appropriate response generator
-#     if use_rag:
-#         vector_store = load_rag_model()
-#         model_response = generate_rag_response(prompt_to_use, vector_store)
-#     else:
-#         model_response = generate_response(prompt_to_use)
-#
-#     # Translate response back to original language if needed
-#     if detect(model_response) != input_lang:
-#         translated_response = await translator.translate(model_response, dest=input_lang)
-#         final_response = translated_response.text
-#     else:
-#         final_response = model_response
-#
-#     return final_response
+    model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
+    model.eval()
+    for name, module in base_model.named_modules():
+        print(name)
 
+    return model, tokenizer
+
+model, tokenizer = load_model()
 async def generate_response_with_translation(user_prompt, use_rag=False):
     target_lang = detect_target_language(user_prompt)
     translator = Translator()
@@ -87,19 +72,7 @@ async def generate_response_with_translation(user_prompt, use_rag=False):
 
 
 @st.cache_resource
-def load_model():
-    base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
-    base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
-    tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
 
-    model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
-    model.eval()
-    for name, module in base_model.named_modules():
-        print(name)
-
-    return model, tokenizer
-
-model, tokenizer = load_model()
 
 #endregion
 
@@ -172,8 +145,6 @@ async def generate_response_with_translation(user_prompt, use_rag=False):
         final_response = model_response
 
     return final_response
-=======
->>>>>>> e8901bb0ccbc0ac3a98310d5c6e28e64a0a714f2
 
 #region RAG
 # Load the RAG model and vector store
@@ -205,11 +176,11 @@ def load_rag_model():
 #endregion
 # Helper function to generate model response
 
-    def generate_response(prompt_text):
-        full_prompt = f"""### Instruction:
-    You are a Pakistani legal assistant specializing in family law. Provide helpful, legally sound, and simple responses.
+def generate_response(prompt_text):
+    full_prompt = f"""### Instruction:
+You are a Pakistani legal assistant specializing in family law. Provide helpful, legally sound, and simple responses.
 
-    ### Input:
+### Input:
     {prompt_text}
 
 ### Response:"""
