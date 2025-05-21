@@ -37,9 +37,6 @@ def load_model():
 
     model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
     model.eval()
-    for name, module in base_model.named_modules():
-        print(name)
-
     return model, tokenizer
 
 model, tokenizer = load_model()
