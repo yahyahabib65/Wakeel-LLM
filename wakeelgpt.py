@@ -1,17 +1,19 @@
-#region import libraries
-import streamlit as st
-import os
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
-from peft import PeftModel
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.document_loaders import TextLoader, PyPDFLoader
-from langchain_community.vectorstores import Chroma
-import google.generativeai as genai
-from fpdf import FPDF
-import datetime
-import asyncio  # Add at top if not already
+    #region import libraries
+    import streamlit as st
+    import os
+    import torch
+    from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
+    from peft import PeftModel
+
+    from langchain_community.llms import HuggingFacePipeline
+    from langchain_community.embeddings import HuggingFaceEmbeddings
+    from langchain.text_splitter import CharacterTextSplitter
+    from langchain_community.document_loaders import TextLoader, PyPDFLoader
+    from langchain_community.vectorstores import Chroma
+    import google.generativeai as genai
+    from fpdf import FPDF
+    import datetime
+    import asyncio  # Add at top if not already
 
 from docx import Document
 import base64
@@ -56,6 +58,32 @@ def detect_target_language(user_prompt):
 #
 #     return final_response
 
+async def generate_response_with_translation(user_prompt, use_rag=False):
+    target_lang = detect_target_language(user_prompt)
+    translator = Translator()
+    input_lang = detect(user_prompt)
+
+    # Translate input prompt if needed
+    prompt_to_use = user_prompt
+    if input_lang != target_lang:
+        translated = await translator.translate(user_prompt, dest=target_lang)
+        prompt_to_use = translated.text
+
+        # Call appropriate response generator
+        if use_rag:
+            vector_store = load_rag_model()
+            model_response = generate_rag_response(prompt_to_use, vector_store)
+        else:
+            model_response = generate_response(prompt_to_use)
+
+        # Translate response back to original language if needed
+        if detect(model_response) != input_lang:
+            translated_response = await translator.translate(model_response, dest=input_lang)
+            final_response = translated_response.text
+        else:
+            final_response = model_response
+
+    return final_response
 
 
 @st.cache_resource
@@ -144,6 +172,8 @@ async def generate_response_with_translation(user_prompt, use_rag=False):
         final_response = model_response
 
     return final_response
+=======
+>>>>>>> e8901bb0ccbc0ac3a98310d5c6e28e64a0a714f2
 
 #region RAG
 # Load the RAG model and vector store
@@ -175,12 +205,12 @@ def load_rag_model():
 #endregion
 # Helper function to generate model response
 
-def generate_response(prompt_text):
-    full_prompt = f"""### Instruction:
-You are a Pakistani legal assistant specializing in family law. Provide helpful, legally sound, and simple responses.
-Answer **only in English or Urdu** — no other languages are allowed. 
-### Input:
-{prompt_text}
+    def generate_response(prompt_text):
+        full_prompt = f"""### Instruction:
+    You are a Pakistani legal assistant specializing in family law. Provide helpful, legally sound, and simple responses.
+
+    ### Input:
+    {prompt_text}
 
 ### Response:"""
 
@@ -507,6 +537,5 @@ with tab2:
             for k in ["draft_type","step","answers","finished","chat_history"]:
                 del st.session_state[k]
             st.experimental_rerun()
-
 
 
