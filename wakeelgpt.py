@@ -30,12 +30,36 @@ def detect_target_language(user_prompt):
         return "en"
     else:
         return "en"  # Default
+# def load_model():
+#     base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
+#     base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
+#     tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
+#
+#     model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
+#     model.eval()
+#     return model, tokenizer
 def load_model():
     base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
-    base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
+
+    # Step 1: Load base model with minimal memory and float32 by default
+    base_model = AutoModelForCausalLM.from_pretrained(
+        base_model_name,
+        low_cpu_mem_usage=True,
+        device_map="auto"  # Optional: can try removing if still failing
+    )
+
     tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
 
-    model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
+    # Step 2: Load LoRA adapter on top
+    model = PeftModel.from_pretrained(
+        base_model,
+        "Frontend\\tinyllama_lora_muslim_family_law"
+    )
+
+    # Optional: convert to float16 if your hardware supports it
+    model = model.half()
+
+    # Set to evaluation mode
     model.eval()
     return model, tokenizer
 
