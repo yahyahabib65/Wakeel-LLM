@@ -160,7 +160,10 @@ def load_rag_model():
 
 def generate_response(prompt_text):
     inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
-    outputs = model.generate(**inputs, max_new_tokens=200)
+    outputs = model.generate(**inputs, max_new_tokens=200,no_repeat_ngram_size=3,
+    do_sample=True,
+    temperature=0.7,
+    top_p=0.9)
     reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
     return reply
 
