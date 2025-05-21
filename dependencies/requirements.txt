@@ -1,0 +1,59 @@
+# Core LLM & NLP
+transformers>=4.35.0
+datasets
+peft
+accelerate
+bitsandbytes
+torch
+sentence-transformers
+
+# RAG, Embeddings, Vector DB
+langchain
+langchain_community
+chromadb
+faiss-cpu
+pypdf
+pdfplumber
+PyMuPDF
+pypdf2
+
+# Data Processing & Utilities
+scikit-learn
+pandas
+numpy
+requests
+beautifulsoup4
+
+# Streamlit UI
+streamlit==
+
+# Document Generation
+python-docx
+fpdf
+
+# Google Gemini API (for RAG)
+google-generativeai
+
+# Language Detection & Translation
+langdetect
+googletrans==4.0.0rc1
+
+# Optional: For audio/speech input (future)
+# speechrecognition
+# pyaudio
+
+# For OCR (image-based PDF extraction)
+pytesseract
+Pillow
+
+# For environment variable management
+python-dotenv
+
+# For async support
+asyncio
+
+# For plotting (if needed)
+matplotlib
+
+# For agentic patterns (if used in draft generator)
+agentic-patterns
