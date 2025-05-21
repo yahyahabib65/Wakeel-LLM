@@ -2,7 +2,7 @@
 import streamlit as st
 import os
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
 
 from langchain_community.llms import HuggingFacePipeline
@@ -41,25 +41,21 @@ def detect_target_language(user_prompt):
 def load_model():
     base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
 
-    # Step 1: Load base model with minimal memory and float32 by default
     base_model = AutoModelForCausalLM.from_pretrained(
         base_model_name,
         low_cpu_mem_usage=True,
-        device_map="auto"  # Optional: can try removing if still failing
+        device_map="auto",
+        offload_folder="offload",  # ✅ Add this line
+        torch_dtype=torch.float16  # Optional, if your hardware supports
     )
 
     tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
 
-    # Step 2: Load LoRA adapter on top
     model = PeftModel.from_pretrained(
         base_model,
         "Frontend\\tinyllama_lora_muslim_family_law"
     )
 
-    # Optional: convert to float16 if your hardware supports it
-    model = model.half()
-
-    # Set to evaluation mode
     model.eval()
     return model, tokenizer
 
