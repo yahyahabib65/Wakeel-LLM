@@ -31,31 +31,6 @@ def detect_target_language(user_prompt):
     else:
         return "en"  # Default
 
-# def generate_response_with_translation(user_prompt, use_rag=False):
-#     target_lang = detect_target_language(user_prompt)
-#     translator = Translator()
-#     input_lang = detect(user_prompt)
-
-#     # Translate input prompt if needed
-#     prompt_to_use = user_prompt
-#     if input_lang != target_lang:
-#         prompt_to_use = translator.translate(user_prompt, dest=target_lang).text
-
-#     # Call appropriate response generator
-#     if use_rag:
-#         vector_store = load_rag_model()
-#         model_response = generate_rag_response(prompt_to_use, vector_store)
-#     else:
-#         model_response = generate_response(prompt_to_use)
-
-#     # Translate response back to original language if needed
-#     if detect(model_response) != input_lang:
-#         final_response = translator.translate(model_response, dest=input_lang).text
-#     else:
-#         final_response = model_response
-
-#     return final_response
-
 async def generate_response_with_translation(user_prompt, use_rag=False):
     target_lang = detect_target_language(user_prompt)
     translator = Translator()
@@ -83,31 +58,6 @@ async def generate_response_with_translation(user_prompt, use_rag=False):
 
     return final_response
 
-
-# #endregion
-# def set_bg_from_local(image_file):
-#     with open(image_file, "rb") as image:
-#         encoded = base64.b64encode(image.read()).decode()
-
-#     css = f"""
-#     <style>
-#     .stApp {{
-#         background-image: url("data:image/png;base64,{encoded}");
-#         background-size: cover;
-#         background-position: center;
-#         background-repeat: no-repeat;
-#     }}
-#     </style>
-#     """
-#     st.markdown(css, unsafe_allow_html=True)
-
-# # Usage
-# set_bg_from_local("demobackground.jpeg")
-
-#region models and helper functions with initialization
-#region lora
-
-
 @st.cache_resource
 def load_model():
     base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
@@ -121,6 +71,62 @@ def load_model():
 model, tokenizer = load_model()
 
 #endregion
+
+
+#guardrail
+
+def check_relevance_prompt(user_prompt):
+    # Prepare the guardrail prompt
+    guardrail_prompt = (
+        f"Is the following question related to family law or personal law? "
+        f"Answer 'Yes' or 'No' only.\n\nQuestion: {user_prompt}"
+    )
+
+    # Use your base model to generate the response (simplified)
+    inputs = tokenizer(guardrail_prompt, return_tensors="pt").to(model.device)
+    outputs = model.generate(**inputs, max_new_tokens=10)
+    reply = tokenizer.decode(outputs[0], skip_special_tokens=True).strip().lower()
+
+    # Extract 'yes' or 'no' from reply
+    if 'yes' in reply:
+        return True
+    else:
+        return False
+
+
+async def generate_response_with_translation(user_prompt, use_rag=False):
+    target_lang = detect_target_language(user_prompt)
+    translator = Translator()
+    input_lang = detect(user_prompt)
+
+    # Translate input prompt if needed
+    prompt_to_use = user_prompt
+    if input_lang != target_lang:
+        translated = await translator.translate(user_prompt, dest=target_lang)
+        prompt_to_use = translated.text
+
+    # Run guardrail check BEFORE generating full response
+    if not check_relevance_prompt(prompt_to_use):
+        return "⚠️ Sorry, I can only answer questions related to family law and personal law."
+
+    # Call appropriate response generator
+    if use_rag:
+        vector_store = load_rag_model()
+        model_response = generate_rag_response(prompt_to_use, vector_store)
+    else:
+        model_response = generate_response(prompt_to_use)
+
+    # Translate response back to original language if needed
+    if detect(model_response) != input_lang:
+        translated_response = await translator.translate(model_response, dest=input_lang)
+        final_response = translated_response.text
+    else:
+        final_response = model_response
+
+    return final_response
+
+#end gaurdrail region
+
 
 #region RAG
 # Load the RAG model and vector store
@@ -226,7 +232,7 @@ with tab1:
             st.chat_message(role).write(text)
 
     # Chat input outside the container for visibility
-    
+
     prompt = st.chat_input(placeholder="Your message", key=f"chat_input_{st.session_state.active_chat}",accept_file=False)
     if prompt:
         # Save user message
@@ -264,7 +270,7 @@ with tab3:
 
     # User input field for the query
     prompt = st.chat_input(placeholder="Ask about family law in Pakistan", key=f"chat_input_t2_{st.session_state.active_chat}")
-    
+
     if prompt:
         # Save user message
         st.session_state.chat_sessions[st.session_state.active_chat].append(("user", prompt))
