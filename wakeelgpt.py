@@ -56,6 +56,30 @@ def detect_target_language(user_prompt):
 #
 #     return final_response
 
+
+
+@st.cache_resource
+def load_model():
+    base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
+    base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
+    tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
+
+    model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
+    model.eval()
+    return model, tokenizer
+
+model, tokenizer = load_model()
+
+#endregion
+
+def check_relevance_prompt(prompt: str) -> bool:
+    family_law_keywords = [
+        "marriage", "nikah", "mehr", "divorce", "khula", "custody",
+        "inheritance", "will", "property transfer", "family court",
+        "legal guardian", "child support", "personal law", "mutah"
+    ]
+    prompt_lower = prompt.lower()
+    return any(keyword in prompt_lower for keyword in family_law_keywords)
 async def generate_response_with_translation(user_prompt, use_rag=False):
     target_lang = detect_target_language(user_prompt)
     translator = Translator()
@@ -86,30 +110,6 @@ async def generate_response_with_translation(user_prompt, use_rag=False):
         final_response = model_response
 
     return final_response
-
-
-@st.cache_resource
-def load_model():
-    base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
-    base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
-    tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
-
-    model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
-    model.eval()
-    return model, tokenizer
-
-model, tokenizer = load_model()
-
-#endregion
-
-def check_relevance_prompt(prompt: str) -> bool:
-    family_law_keywords = [
-        "marriage", "nikah", "mehr", "divorce", "khula", "custody",
-        "inheritance", "will", "property transfer", "family court",
-        "legal guardian", "child support", "personal law", "mutah"
-    ]
-    prompt_lower = prompt.lower()
-    return any(keyword in prompt_lower for keyword in family_law_keywords)
 
 #region RAG
 # Load the RAG model and vector store
