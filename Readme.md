@@ -13,7 +13,6 @@ Wakeel LLM is an AI-powered legal assistant focused on Pakistan Family Law, supp
 ---
 
 ## Features  
-*As of 13 April 2025*
 
 ### 1. Legal Consulting  
 Designed for both general users and legal professionals.  
@@ -46,7 +45,7 @@ Designed for lawyers to automatically retrieve relevant legal precedents based o
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.10+
 - [pip](https://pip.pypa.io/en/stable/)
 - [Streamlit](https://streamlit.io/)
 - (Optional) CUDA-enabled GPU for faster inference
@@ -55,7 +54,7 @@ Designed for lawyers to automatically retrieve relevant legal precedents based o
 
 1. **Clone the repository:**
     ```sh
-    git clone https://github.com/yourusername/Wakeel-LLM.git
+    git clone https://github.com/yahyahabib65/Wakeel-LLM.git
     cd Wakeel-LLM
     ```
 
@@ -74,7 +73,7 @@ Designed for lawyers to automatically retrieve relevant legal precedents based o
 To launch the main Streamlit app:
 
 ```sh
-streamlit run Project-LLM.py
+streamlit run wakeelgpt.py
 ```
 
 - The app will open in your browser at `http://localhost:8501/` by default.
@@ -91,30 +90,21 @@ For production or server deployment:
     ```
 
 2. **Install dependencies as above.**
-
+    ```
+    # On Windows: pip install -r dependencies/requirements.txt 
+    ```
 3. **Run Streamlit with appropriate host/port:**
     ```sh
-    streamlit run Project-LLM.py --server.port 8501 --server.address 0.0.0.0
+    streamlit run wakeelgpt.py --server.port 8501 --server.address 0.0.0.0
     ```
 
-4. **(Optional) Use a process manager** (e.g., `pm2`, `systemd`, or `supervisor`) to keep the app running.
 
-5. **(Optional) Set up a reverse proxy** (e.g., Nginx) for HTTPS and domain routing.
 
----
-
-## Contributing
-
-Contributions are welcome! Please open issues or submit pull requests for improvements.
-
----
 
 ## License
 
 This project is licensed under the MIT License.
 
----
-
 ## Contact
 
-For questions or support, please contact [your-email@example.com](mailto:your-email@example.com).
+For questions or support, please contact [24280001@lums.edu.pk](mailto:24280001@lums.edu.pk) , [24280055@lums.edu.pk](mailto:24280055@lums.edu.pk) , [24280041@lums.edu.pk](mailto:24280041@lums.edu.pk).
