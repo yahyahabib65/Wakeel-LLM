@@ -91,12 +91,13 @@ def check_relevance_prompt(user_prompt):
         num_beams=5,
         early_stopping=True,
         pad_token_id=tokenizer.eos_token_id    reply = tokenizer.decode(outputs[0], skip_special_tokens=True).strip().lower()
-
+    )
     # Extract 'yes' or 'no' from reply
     if 'yes' in reply:
         return True
     else:
         return False
+)
 
 
 async def generate_response_with_translation(user_prompt, use_rag=False):
