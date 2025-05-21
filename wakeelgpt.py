@@ -296,7 +296,7 @@ with tab3:
 
         # Generate response using the RAG function
         # reply = generate_rag_response(prompt, vector_store)
-        reply = generate_response_with_translation(prompt, use_rag=True)
+        reply = asyncio.run(generate_response_with_translation(prompt, use_rag=True))
 
         # reply = "This is a placeholder response. Please implement the actual RAG response generation."
 
