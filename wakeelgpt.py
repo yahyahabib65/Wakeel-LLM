@@ -78,14 +78,19 @@ model, tokenizer = load_model()
 def check_relevance_prompt(user_prompt):
     # Prepare the guardrail prompt
     guardrail_prompt = (
-        f"Is the following question related to family law or personal law? "
-        f"Answer 'Yes' or 'No' only.\n\nQuestion: {user_prompt}"
+        f"Answer 'Yes' or 'No' only.\n"
+        f"Is the following question related to family law or personal law?\n"
+        f"Question: {user_prompt}"
     )
 
     # Use your base model to generate the response (simplified)
     inputs = tokenizer(guardrail_prompt, return_tensors="pt").to(model.device)
-    outputs = model.generate(**inputs, max_new_tokens=10)
-    reply = tokenizer.decode(outputs[0], skip_special_tokens=True).strip().lower()
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=3,
+        num_beams=5,
+        early_stopping=True,
+        pad_token_id=tokenizer.eos_token_id    reply = tokenizer.decode(outputs[0], skip_special_tokens=True).strip().lower()
 
     # Extract 'yes' or 'no' from reply
     if 'yes' in reply:
