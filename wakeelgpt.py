@@ -2,7 +2,7 @@
 import streamlit as st
 import os
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
 from peft import PeftModel
 
 from langchain_community.llms import HuggingFacePipeline
@@ -30,36 +30,32 @@ def detect_target_language(user_prompt):
         return "en"
     else:
         return "en"  # Default
-# def load_model():
-#     base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
-#     base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
-#     tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
-#
-#     model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
-#     model.eval()
-#     return model, tokenizer
-def load_model():
-    base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
 
-    base_model = AutoModelForCausalLM.from_pretrained(
-        base_model_name,
-        low_cpu_mem_usage=True,
-        device_map="auto",
-        offload_folder="offload",  # ✅ Add this line
-        torch_dtype=torch.float16  # Optional, if your hardware supports
-    )
+# def generate_response_with_translation(user_prompt, use_rag=False):
+#     target_lang = detect_target_language(user_prompt)
+#     translator = Translator()
+#     input_lang = detect(user_prompt)
 
-    tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
+#     # Translate input prompt if needed
+#     prompt_to_use = user_prompt
+#     if input_lang != target_lang:
+#         prompt_to_use = translator.translate(user_prompt, dest=target_lang).text
 
-    model = PeftModel.from_pretrained(
-        base_model,
-        "Frontend\\tinyllama_lora_muslim_family_law"
-    )
+#     # Call appropriate response generator
+#     if use_rag:
+#         vector_store = load_rag_model()
+#         model_response = generate_rag_response(prompt_to_use, vector_store)
+#     else:
+#         model_response = generate_response(prompt_to_use)
 
-    model.eval()
-    return model, tokenizer
+#     # Translate response back to original language if needed
+#     if detect(model_response) != input_lang:
+#         final_response = translator.translate(model_response, dest=input_lang).text
+#     else:
+#         final_response = model_response
 
-model, tokenizer = load_model()
+#     return final_response
+
 async def generate_response_with_translation(user_prompt, use_rag=False):
     target_lang = detect_target_language(user_prompt)
     translator = Translator()
@@ -71,97 +67,60 @@ async def generate_response_with_translation(user_prompt, use_rag=False):
         translated = await translator.translate(user_prompt, dest=target_lang)
         prompt_to_use = translated.text
 
-        # Call appropriate response generator
-        if use_rag:
-            vector_store = load_rag_model()
-            model_response = generate_rag_response(prompt_to_use, vector_store)
-        else:
-            model_response = generate_response(prompt_to_use)
-
-        # Translate response back to original language if needed
-        if detect(model_response) != input_lang:
-            translated_response = await translator.translate(model_response, dest=input_lang)
-            final_response = translated_response.text
-        else:
-            final_response = model_response
-
-    return final_response
-
-
-@st.cache_resource
-
-
-#endregion
-
-def check_relevance_prompt(prompt: str) -> bool:
-    family_law_keywords = [
-        "marriage", "nikah", "mehr", "divorce", "khula", "custody",
-        "inheritance", "will", "property transfer", "family court",
-        "legal guardian", "child support", "personal law", "mutah"
-    ]
-    prompt_lower = prompt.lower()
-    return any(keyword in prompt_lower for keyword in family_law_keywords)
-# async def generate_response_with_translation(user_prompt, use_rag=False):
-#     target_lang = detect_target_language(user_prompt)
-#     translator = Translator()
-#     input_lang = detect(user_prompt)
-#
-#     # Translate input prompt if needed
-#     prompt_to_use = user_prompt
-#     if input_lang != target_lang:
-#         translated = await translator.translate(user_prompt, dest=target_lang)
-#         prompt_to_use = translated.text
-#
-#     # Check relevance BEFORE generating full response
-#     if not check_relevance_prompt(prompt_to_use):
-#         return "⚠️ Sorry, I can only answer questions related to family law and personal law."
-#
-#     # Generate model response
-#     if use_rag:
-#         vector_store = load_rag_model()
-#         model_response = generate_rag_response(prompt_to_use, vector_store)
-#     else:
-#         model_response = generate_response(prompt_to_use)
-#
-#     # Translate response back if needed
-#     if detect(model_response) != input_lang:
-#         translated_response = await translator.translate(model_response, dest=input_lang)
-#         final_response = translated_response.text
-#     else:
-#         final_response = model_response
-#
-#     return final_response
-
-async def generate_response_with_translation(user_prompt, use_rag=False):
-    target_lang = detect_target_language(user_prompt)
-    translator = Translator()
-    input_lang = detect(user_prompt)
-
-    # Translate input prompt if needed
-    prompt_to_use = user_prompt
-    if input_lang != target_lang:
-        translated = translator.translate(user_prompt, dest=target_lang)
-        prompt_to_use = translated.text
-
-    # Check relevance BEFORE generating full response
-    if not check_relevance_prompt(prompt_to_use):
-        return "⚠️ Sorry, I can only answer questions related to family law and personal law."
-
-    # Generate model response
+    # Call appropriate response generator
     if use_rag:
         vector_store = load_rag_model()
         model_response = generate_rag_response(prompt_to_use, vector_store)
     else:
         model_response = generate_response(prompt_to_use)
 
-    # Translate response back if needed
+    # Translate response back to original language if needed
     if detect(model_response) != input_lang:
-        translated_response = translator.translate(model_response, dest=input_lang)
+        translated_response = await translator.translate(model_response, dest=input_lang)
         final_response = translated_response.text
     else:
         final_response = model_response
 
     return final_response
+
+
+# #endregion
+# def set_bg_from_local(image_file):
+#     with open(image_file, "rb") as image:
+#         encoded = base64.b64encode(image.read()).decode()
+
+#     css = f"""
+#     <style>
+#     .stApp {{
+#         background-image: url("data:image/png;base64,{encoded}");
+#         background-size: cover;
+#         background-position: center;
+#         background-repeat: no-repeat;
+#     }}
+#     </style>
+#     """
+#     st.markdown(css, unsafe_allow_html=True)
+
+# # Usage
+# set_bg_from_local("demobackground.jpeg")
+
+#region models and helper functions with initialization
+#region lora
+
+
+@st.cache_resource
+def load_model():
+    base_model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
+    base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
+    tokenizer = AutoTokenizer.from_pretrained("Frontend\\tinyllama_lora_muslim_family_law")
+
+    model = PeftModel.from_pretrained(base_model, "Frontend\\tinyllama_lora_muslim_family_law")
+    model.eval()
+    return model, tokenizer
+
+model, tokenizer = load_model()
+
+#endregion
 
 #region RAG
 # Load the RAG model and vector store
@@ -194,26 +153,10 @@ def load_rag_model():
 # Helper function to generate model response
 
 def generate_response(prompt_text):
-    full_prompt = f"""### Instruction:
-You are a Pakistani legal assistant specializing in family law. Provide helpful, legally sound, and simple responses.
-
-### Input:
-    {prompt_text}
-
-### Response:"""
-
-    inputs = tokenizer(full_prompt, return_tensors="pt").to(model.device)
-    outputs = model.generate(
-        **inputs,
-        max_new_tokens=256,
-        no_repeat_ngram_size=3,
-        do_sample=True,
-        temperature=0.7,
-        top_p=0.9,
-        pad_token_id=tokenizer.eos_token_id
-    )
+    inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
+    outputs = model.generate(**inputs, max_new_tokens=200)
     reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return reply.split("### Response:")[-1].strip()
+    return reply
 
 
 def generate_rag_response(prompt_text, vector_store):
@@ -283,7 +226,7 @@ with tab1:
             st.chat_message(role).write(text)
 
     # Chat input outside the container for visibility
-
+    
     prompt = st.chat_input(placeholder="Your message", key=f"chat_input_{st.session_state.active_chat}",accept_file=False)
     if prompt:
         # Save user message
@@ -321,7 +264,7 @@ with tab3:
 
     # User input field for the query
     prompt = st.chat_input(placeholder="Ask about family law in Pakistan", key=f"chat_input_t2_{st.session_state.active_chat}")
-
+    
     if prompt:
         # Save user message
         st.session_state.chat_sessions[st.session_state.active_chat].append(("user", prompt))
@@ -444,38 +387,17 @@ with tab2:
 
     # 3) Question bank
     draft_options = {
-        "Khula Petition": [
-            ("wife_name", "👩 What is the wife's full name?"),
-            ("husband_name", "🧔 What is the husband's full name?"),
-            ("marriage_date", "📅 When did the marriage take place?"),
-            ("place_of_marriage", "📍 Where was the marriage held?"),
-            ("reason_for_khula", "💔 What is the reason for seeking Khula?"),
-            ("mehr_details", "💰 What were the Mehr details?"),
-            ("children_details", "👶 Are there any children?"),
-            ("prayer", "🙏 What relief is being sought?")
-        ],
-        "Property Transfer After Death": [
-            ("deceased_name", "💀 What was the full name of the deceased?"),
-            ("date_of_death", "📅 What was the date of death?"),
-            ("property_details", "🏠 What property is being transferred?"),
-            ("legal_heirs", "👪 Who are the legal heirs?"),
-            ("transfer_reason", "📝 What is the reason for transfer?")
-        ],
-        "Will Deed": [
-            ("testator_name", "✍️ What is the testator's full name?"),
-            ("testator_address", "📍 What is the address of the testator?"),
-            ("property_to_be_distributed", "📦 What property is to be distributed?"),
-            ("beneficiaries", "👨‍👩‍👧 Who are the beneficiaries?"),
-            ("executor_name", "👨‍⚖️ Who is the executor of the will?")
-        ],
-        "Marriage Registration": [
-            ("bride_name", "👰 What is the bride's name?"),
-            ("groom_name", "🤵 What is the groom's name?"),
-            ("marriage_date", "📅 When did the marriage take place?"),
-            ("place_of_marriage", "📍 Where did the marriage take place?"),
-            ("witnesses", "👀 Who were the witnesses?"),
-            ("nikah_registrar", "🧾 Who is the Nikah Registrar?")
-        ]
+      "Khula Petition": [
+         ("wife_name",      "👩 What is the wife's full name?"),
+         ("husband_name",   "🧔 What is the husband's full name?"),
+         ("marriage_date", "📅 When did the marriage take place?"),
+        ("place_of_marriage", "📍 Where was the marriage held?"),
+        ("reason_for_khula", "💔 What is the reason for seeking Khula?"),
+        ("mehr_details", "💰 What were the Mehr details?"),
+        ("children_details", "👶 Are there any children?"),
+        ("prayer", "🙏 What relief is being sought?")
+      ],
+      # other types …
     }
 
     # 4) Single container for chat history + input
@@ -524,6 +446,4 @@ with tab2:
         if st.button("🔁 Create New Draft"):
             for k in ["draft_type","step","answers","finished","chat_history"]:
                 del st.session_state[k]
-            st.experimental_rerun()
-
-
+            st.rerun()
