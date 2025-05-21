@@ -1,19 +1,19 @@
-    #region import libraries
-    import streamlit as st
-    import os
-    import torch
-    from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
-    from peft import PeftModel
+#region import libraries
+import streamlit as st
+import os
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
+from peft import PeftModel
 
-    from langchain_community.llms import HuggingFacePipeline
-    from langchain_community.embeddings import HuggingFaceEmbeddings
-    from langchain.text_splitter import CharacterTextSplitter
-    from langchain_community.document_loaders import TextLoader, PyPDFLoader
-    from langchain_community.vectorstores import Chroma
-    import google.generativeai as genai
-    from fpdf import FPDF
-    import datetime
-    import asyncio  # Add at top if not already
+from langchain_community.llms import HuggingFacePipeline
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.text_splitter import CharacterTextSplitter
+from langchain_community.document_loaders import TextLoader, PyPDFLoader
+from langchain_community.vectorstores import Chroma
+import google.generativeai as genai
+from fpdf import FPDF
+import datetime
+import asyncio  # Add at top if not already
 
 from docx import Document
 import base64
